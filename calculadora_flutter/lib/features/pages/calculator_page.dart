@@ -3,6 +3,8 @@ import '../controllers/calc_controller.dart';
 import '../enums/CalcOp.dart';
 import '../widgets/premium_input.dart';
 import '../../../../core/math_utils.dart';
+import '../widgets/animated_calc_button.dart';
+import 'package:flutter/services.dart';
 
 class CalculatorPage extends StatefulWidget {
   const CalculatorPage({super.key});
@@ -65,23 +67,66 @@ class _CalculatorPageState extends State<CalculatorPage> {
                   // --- SECCIÓN DE RESULTADO PRINCIPAL ---
                   Container(
                     padding: const EdgeInsets.all(24),
+                    width: double.infinity,
                     decoration: BoxDecoration(
                       color: colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Column(
                       children: [
-                        Text(_controller.labelResult, style: TextStyle(color: colorScheme.onPrimaryContainer, fontSize: 16)),
-                        const SizedBox(height: 8),
                         Text(
-                          _controller.resultText,
-                          style: TextStyle(
-                            color: colorScheme.onPrimaryContainer,
-                            fontSize: 48,
-                            fontWeight: FontWeight.w800,
-                          ),
-                          textAlign: TextAlign.center,
+                            _controller.labelResult,
+                            style: TextStyle(color: colorScheme.onPrimaryContainer, fontSize: 16)
                         ),
+                        const SizedBox(height: 8),
+
+                        // NUEVO: AnimatedSwitcher para el resultado
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (Widget child, Animation<double> animation) {
+                            // Combina Fade y Scale para un efecto suave al cambiar el número
+                            return FadeTransition(
+                              opacity: animation,
+                              child: ScaleTransition(scale: animation, child: child),
+                            );
+                          },
+                          child: Text(
+                            _controller.resultText,
+                            // La KEY es obligatoria para que AnimatedSwitcher sepa que el texto cambió
+                            key: ValueKey<String>(_controller.resultText),
+                            style: TextStyle(
+                              color: colorScheme.onPrimaryContainer,
+                              fontSize: 48,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        if (_controller.operationDetails != null) ...[
+                          const SizedBox(height: 16),
+                          Divider(
+                            color: colorScheme.onPrimaryContainer.withOpacity(0.2),
+                            thickness: 1,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // NUEVO: También animamos los detalles matemáticos
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 400),
+                            child: Text(
+                              _controller.operationDetails!,
+                              key: ValueKey<String>(_controller.operationDetails!),
+                              style: TextStyle(
+                                color: colorScheme.onPrimaryContainer.withOpacity(0.8),
+                                fontSize: 16,
+                                height: 1.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -116,13 +161,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
   }
 
   Widget _buildOpBtn(String text, CalcOp op, ColorScheme colorScheme) {
-    return FilledButton.tonal(
-      style: FilledButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-      onPressed: () => _controller.calculate(op),
-      child: Text(text, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+    return AnimatedCalcButton(
+      text: text,
+      colorScheme: colorScheme,
+      onPressed: () {
+        _controller.calculate(op);
+        HapticFeedback.mediumImpact();
+      },
     );
   }
 

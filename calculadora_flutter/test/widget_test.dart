@@ -1,30 +1,24 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:calculadora_flutter/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('Calculadora Premium smoke test - Verifica carga de inputs y título', (WidgetTester tester) async {
+    // 1. Construimos nuestra app y disparamos el primer frame.
     await tester.pumpWidget(const PremiumCalculatorApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // 2. Verificamos que el AppBar muestra el título correcto de la calculadora.
+    expect(find.text('Calculadora Científica'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // 3. Verificamos que los dos inputs principales ("Número 1" y "Número 2") están presentes en la pantalla.
+    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.text('Número 1'), findsOneWidget);
+    expect(find.text('Número 2'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 4. Verificamos que los botones de operaciones principales estén renderizados.
+    expect(find.text('+'), findsOneWidget);
+    expect(find.text('-'), findsOneWidget);
+    expect(find.text('×'), findsOneWidget);
+    expect(find.text('÷'), findsOneWidget);
   });
 }
